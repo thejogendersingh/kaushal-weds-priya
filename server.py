@@ -1,5 +1,4 @@
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-import socket
 import os
 
 PORT = 3000
@@ -31,21 +30,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-cache")
         super().end_headers()
 
-class DualStackServer(ThreadingHTTPServer):
-    address_family = socket.AF_INET6
-    def server_bind(self):
-        try:
-            self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
-        except (AttributeError, OSError):
-            pass
-        return super().server_bind()
-
 if __name__ == "__main__":
-    try:
-        server = DualStackServer(("", PORT), Handler)
-    except Exception:
-        # Fallback to standard IPv4 if IPv6 not supported
-        server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
-    
-    print(f"Serving wedding invitation at http://127.0.0.1:{PORT} and http://localhost:{PORT}")
+    server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
+    print(f"Serving wedding invitation at http://127.0.0.1:{PORT}")
     server.serve_forever()
